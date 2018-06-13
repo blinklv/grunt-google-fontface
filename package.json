@@ -1,0 +1,38 @@
+{
+  "name": "grunt-google-fontface",
+  "description": "Fetch CSS files of fonts from Google.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/blinklv/grunt-google-fontface",
+  "author": {
+    "name": "blinklv",
+    "email": "blinklv@icloud.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/blinklv/grunt-google-fontface.git"
+  },
+  "bugs": {
+    "url": "https://github.com/blinklv/grunt-google-fontface/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/blinklv/grunt-google-fontface/blob/master/LICENSE-MIT"
+    }
+  ],
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "^0.9.2",
+    "grunt-contrib-clean": "^0.5.0",
+    "grunt-contrib-nodeunit": "^0.3.3",
+    "grunt": "~0.4.5"
+  },
+  "keywords": [
+    "gruntplugin"
+  ]
+}
