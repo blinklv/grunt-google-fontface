@@ -9,41 +9,46 @@
 'use strict';
 
 module.exports = function(grunt) {
-
-  // Please see the Grunt documentation for more information regarding task
-  // creation: http://gruntjs.com/creating-tasks
+    const http = require('http');
+    const path = require('path');
+    const isWindows = process.platform === 'win32';
+    const extract = /^(\w+)(?:-(Thin|Light|Medium|Blod|Black)?(\w+)?)?\.ttf$/;
 
   grunt.registerMultiTask('google_fontface', 'Fetch CSS files of fonts from Google.', function() {
-    // Merge task-specific and/or target-specific options with these defaults.
-    var options = this.options({
-      punctuation: '.',
-      separator: ', '
+    const options = this.options({
+        // The resource URL that you can get related CSS files for your fonts.
+        url: 'https://fonts.googleapis.com/css'
     });
 
-    // Iterate over all specified file groups.
-    this.files.forEach(function(f) {
-      // Concat specified files.
-      var src = f.src.filter(function(filepath) {
-        // Warn on and remove invalid source files (if nonull was set).
-        if (!grunt.file.exists(filepath)) {
-          grunt.log.warn('Source file "' + filepath + '" not found.');
-          return false;
-        } else {
-          return true;
-        }
-      }).map(function(filepath) {
-        // Read file source.
-        return grunt.file.read(filepath);
-      }).join(grunt.util.normalizelf(options.separator));
+    const detectDestType = function(dest) {
+      if (grunt.util._.endsWith(dest, '/')) {
+        return 'directory';
+      } else {
+        return 'file';
+      }
+    };
 
-      // Handle options.
-      src += options.punctuation;
+    const unixifyPath = function(filepath) {
+      if (isWindows) {
+        return filepath.replace(/\\/g, '/');
+      } else {
+        return filepath;
+      }
+    };
 
-      // Write the destination file.
-      grunt.file.write(f.dest, src);
+    const sprintf = function() {
+      return [...arguments].reduce((p,c) => p.replace(/%s/,c))
+    };
 
-      // Print a success message.
-      grunt.log.writeln('File "' + f.dest + '" created.');
+    let fonts = {};
+
+    this.files.forEach(function(file) {
+        file.src.forEach(function(src) {
+            let results = extract.exec(path.basename(unixifyPath(src)));
+            if (results === null) {
+                grunt.log.error(sprintf("The name of the file '%s' is not standard", src));
+            }
+        });
     });
   });
 
