@@ -15,7 +15,6 @@ module.exports = function(grunt) {
     const extract = /^(\w+)(?:-(Thin|Light|Regular|Medium|Bold|Black)?(\w+)?)?\.ttf$/;
 
   grunt.registerMultiTask('google_fontface', 'Fetch CSS files of fonts from Google.', function() {
-    console.log(this.target);
     const options = this.options({
         url: 'https://fonts.googleapis.com/css'
     });
@@ -40,7 +39,10 @@ module.exports = function(grunt) {
         },
         wait() {
             setTimeout(() => {
-                if (this.count === 0) return;
+                if (this.count === 0) {
+                    this.gruntDone();
+                    return
+                }
                 this.wait();
             }, 0);
         }
@@ -72,13 +74,19 @@ module.exports = function(grunt) {
         const requestURL = `${options.url}?family=${family}`;
         wg.add();
         request(requestURL, (error, res, body) => {
-            grunt.file.write(dest, body);
+            if (error !== undefined) {
+                grunt.log.error(`fetch '${requestURL}' failed: ${error}`);
+            } else if (res.statusCode !== 200) {
+                grunt.log.error(`fetch '${requestURL}' failed: ${res.statusCode}`);
+            } else {
+                grunt.log.ok(`fetch '${requestURL}' successfully`);
+                grunt.file.write(dest, body);
+            }
             wg.done();
         });
     };
 
 
-    // Dancing+Script:400,700|Eater|Gloria+Hallelujah|Roboto:100,300,300i,400,500,700,900
     const encodeFont = function(name, formats) {
         let parameter = encodeName(name);
         let str = formats.slice(1).reduce( (parameter, format) => parameter + ',' + encodeFormat(format), encodeFormat(formats[0]));
@@ -92,7 +100,7 @@ module.exports = function(grunt) {
         if (format.weight === undefined && format.style === undefined) {
             return '';
         }
-        return (weights[format.weight] ? weights[format.weight]: 400) + 
+        return (weights[format.weight] ? weights[format.weight]: 400) +
             (format.style === 'Italic' ? 'i': '');
     }
 
