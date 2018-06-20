@@ -9,16 +9,44 @@
 'use strict';
 
 module.exports = function(grunt) {
-    const http = require('http');
     const path = require('path');
+    const request = require('request');
     const isWindows = process.platform === 'win32';
     const extract = /^(\w+)(?:-(Thin|Light|Regular|Medium|Bold|Black)?(\w+)?)?\.ttf$/;
 
   grunt.registerMultiTask('google_fontface', 'Fetch CSS files of fonts from Google.', function() {
+    console.log(this.target);
     const options = this.options({
-        // The resource URL that you can get related CSS files for your fonts.
         url: 'https://fonts.googleapis.com/css'
     });
+
+    const weights = {
+        Thin: 100,
+        Light: 300,
+        Regular: 400,
+        Medium: 500,
+        Bold: 700,
+        Black: 900
+    };
+
+    let wg = {
+        count: 0,
+        gruntDone: this.async(),
+        add() {
+            this.count++;
+        },
+        done() {
+            this.count = this.count > 0 ? this.count - 1 : 0;
+        },
+        wait() {
+            setTimeout(() => {
+                if (this.count === 0) return;
+                this.wait();
+            }, 0);
+        }
+    };
+
+    let fonts = {};
 
     const detectDestType = function(dest) {
       if (grunt.util._.endsWith(dest, '/')) {
@@ -38,6 +66,15 @@ module.exports = function(grunt) {
 
     const sprintf = function() {
       return [...arguments].reduce((p,c) => p.replace(/%s/,c))
+    };
+
+    const fetch = function(family, dest) {
+        const requestURL = `${options.url}?family=${family}`;
+        wg.add();
+        request(requestURL, (error, res, body) => {
+            grunt.file.write(dest, body);
+            wg.done();
+        });
     };
 
 
@@ -64,17 +101,6 @@ module.exports = function(grunt) {
     };
 
 
-    const weights = {
-        Thin: 100,
-        Light: 300,
-        Regular: 400,
-        Medium: 500,
-        Bold: 700,
-        Black: 900
-    };
-
-    let fonts = {};
-
     this.files.forEach(function(file) {
         file.src.forEach(function(src) {
             let results = extract.exec(path.basename(unixifyPath(src)));
@@ -90,13 +116,17 @@ module.exports = function(grunt) {
         });
 
         const names = Object.keys(fonts);
-        let family = names.slice(1).reduce((family, name) => {
-            return family + '|' + encodeFont(name, fonts[name]);
-        }, encodeFont(names[0],fonts[names[0]]));
-
-        let url = options.url + '?family=' + family;
-        console.log(url);
+        if (detectDestType(file.dest) === 'file') {
+            const family = names.slice(1).reduce((family, name) => {
+                return family + '|' + encodeFont(name, fonts[name]);
+            }, encodeFont(names[0],fonts[names[0]]));
+            fetch(family, file.dest);
+        } else {
+            names.forEach((name) => {
+                fetch(encodeFont(name, fonts[name]), `${file.dest}${name}.css`);
+            });
+        }
     });
+    wg.wait();
   });
-
 };
