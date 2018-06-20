@@ -74,7 +74,7 @@ module.exports = function(grunt) {
         const requestURL = `${options.url}?family=${family}`;
         wg.add();
         request(requestURL, (error, res, body) => {
-            if (error !== undefined) {
+            if (error !== null) {
                 grunt.log.error(`fetch '${requestURL}' failed: ${error}`);
             } else if (res.statusCode !== 200) {
                 grunt.log.error(`fetch '${requestURL}' failed: ${res.statusCode}`);
