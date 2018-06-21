@@ -15,17 +15,27 @@ module.exports = function(grunt) {
     const extract = /^(\w+)(?:-(Thin|Light|Regular|Medium|Bold|Black)?(\w+)?)?\.ttf$/;
 
   grunt.registerMultiTask('google_fontface', 'Fetch CSS files of fonts from Google.', function() {
+
     const options = this.options({
         url: 'https://fonts.googleapis.com/css'
     });
 
     const weights = {
+        // Mapping weight descriptions to weight numbers.
         Thin: 100,
         Light: 300,
         Regular: 400,
         Medium: 500,
         Bold: 700,
-        Black: 900
+        Black: 900,
+        
+        // Mapping weight numbers to weight descriptions.
+        100: 'Thin',
+        300: 'Light',
+        400: 'Regular',
+        500: 'Medium',
+        700: 'Bold',
+        900: 'Black
     };
 
     let wg = {
@@ -47,8 +57,6 @@ module.exports = function(grunt) {
             }, 0);
         }
     };
-
-    let fonts = {};
 
     const detectDestType = function(dest) {
       if (grunt.util._.endsWith(dest, '/')) {
@@ -110,6 +118,7 @@ module.exports = function(grunt) {
 
 
     this.files.forEach(function(file) {
+        let fonts = {};
         file.src.forEach(function(src) {
             let results = extract.exec(path.basename(unixifyPath(src)));
             if (results === null || results.length < 2) {
