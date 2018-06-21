@@ -27,15 +27,7 @@ module.exports = function(grunt) {
         Regular: 400,
         Medium: 500,
         Bold: 700,
-        Black: 900,
-        
-        // Mapping weight numbers to weight descriptions.
-        100: 'Thin',
-        300: 'Light',
-        400: 'Regular',
-        500: 'Medium',
-        700: 'Bold',
-        900: 'Black
+        Black: 900
     };
 
     let wg = {
@@ -74,11 +66,20 @@ module.exports = function(grunt) {
       }
     };
 
+    const fontfaceSrc = /src: local\('(.*?)'\), local\('(.*?)'\).*/g;
+
+    const replaceSrc = function(body) {
+        body = body.replace(fontfaceSrc, (match, name1, name2) => {
+            return `src: url(${name2}.ttf);`;
+        });
+        return body;
+    };
+
     const sprintf = function() {
       return [...arguments].reduce((p,c) => p.replace(/%s/,c))
     };
 
-    const fetch = function(family, dest) {
+    const fetch = function(family, dest, src) {
         const requestURL = `${options.url}?family=${family}`;
         wg.add();
         request(requestURL, (error, res, body) => {
@@ -88,7 +89,7 @@ module.exports = function(grunt) {
                 grunt.log.error(`fetch '${requestURL}' failed: ${res.statusCode}`);
             } else {
                 grunt.log.ok(`fetch '${requestURL}' successfully`);
-                grunt.file.write(dest, body);
+                grunt.file.write(dest, replaceSrc(body));
             }
             wg.done();
         });
@@ -137,10 +138,10 @@ module.exports = function(grunt) {
             const family = names.slice(1).reduce((family, name) => {
                 return family + '|' + encodeFont(name, fonts[name]);
             }, encodeFont(names[0],fonts[names[0]]));
-            fetch(family, file.dest);
+            fetch(family, file.dest, file.src);
         } else {
             names.forEach((name) => {
-                fetch(encodeFont(name, fonts[name]), `${file.dest}${name}.css`);
+                fetch(encodeFont(name, fonts[name], file.src), `${file.dest}${name}.css`);
             });
         }
     });
