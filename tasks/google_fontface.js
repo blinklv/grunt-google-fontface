@@ -66,19 +66,6 @@ module.exports = function(grunt) {
       }
     };
 
-    const fontfaceSrc = /src: local\('(.*?)'\), local\('(.*?)'\).*/g;
-
-    const replaceSrc = function(body) {
-        body = body.replace(fontfaceSrc, (match, name1, name2) => {
-            return `src: url(${name2}.ttf);`;
-        });
-        return body;
-    };
-
-    const sprintf = function() {
-      return [...arguments].reduce((p,c) => p.replace(/%s/,c))
-    };
-
     const fetch = function(family, dest, src) {
         const requestURL = `${options.url}?family=${family}`;
         wg.add();
@@ -89,10 +76,37 @@ module.exports = function(grunt) {
                 grunt.log.error(`fetch '${requestURL}' failed: ${res.statusCode}`);
             } else {
                 grunt.log.ok(`fetch '${requestURL}' successfully`);
-                grunt.file.write(dest, replaceSrc(body));
+                grunt.file.write(dest, replaceSrc(body, dest, src));
             }
             wg.done();
         });
+    };
+
+    const fontfaceSrc = /src: local\('(.*?)'\), local\('(.*?)'\).*/g;
+
+    const replaceSrc = function(body, dest, src) {
+        body = body.replace(fontfaceSrc, (match, name1, name2) => {
+            let srcFile = selectSrcFile(src, name2);
+            if (srcFile === null) {
+                srcFile = selectSrcFile(src, name1);
+            }
+
+            if (srcFile !== null) {
+                return `src: url(${path.relative(dest, srcFile)});`;
+            } 
+            return match;
+        });
+        return body;
+    };
+
+    const selectSrcFile = function(src, name) {
+        let re = new RegExp(name + '.ttf$');
+        for (let srcFile of src) {
+            if (re.test(srcFile)) {
+                return srcFile;
+            }
+        }
+        return null;
     };
 
 
@@ -123,7 +137,7 @@ module.exports = function(grunt) {
         file.src.forEach(function(src) {
             let results = extract.exec(path.basename(unixifyPath(src)));
             if (results === null || results.length < 2) {
-                grunt.log.error(sprintf("The name of the file '%s' is not standard", src));
+                grunt.log.error(`The name of the file '${src}' is not standard`);
             }
 
             if (!fonts.hasOwnProperty(results[1])) {
@@ -141,7 +155,7 @@ module.exports = function(grunt) {
             fetch(family, file.dest, file.src);
         } else {
             names.forEach((name) => {
-                fetch(encodeFont(name, fonts[name], file.src), `${file.dest}${name}.css`);
+                fetch(encodeFont(name, fonts[name], file.src), `${file.dest}${name}.css`, file.src)
             });
         }
     });
