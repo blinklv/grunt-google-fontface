@@ -12,7 +12,7 @@ module.exports = function(grunt) {
     const path = require('path');
     const request = require('request');
     const isWindows = process.platform === 'win32';
-    const extract = /^(\w+)(?:-(Thin|Light|Regular|Medium|Bold|Black)?(\w+)?)?\.ttf$/;
+    const extract = /^(\w+)(?:-(Thin|ExtraLight|Light|Regular|Medium|SemiBold|Bold|ExtraBold|Black)?(\w+)?)?\.ttf$/;
 
   grunt.registerMultiTask('google_fontface', 'Fetch CSS files of fonts from Google.', function() {
 
@@ -23,10 +23,13 @@ module.exports = function(grunt) {
     const weights = {
         // Mapping weight descriptions to weight numbers.
         Thin: 100,
+        ExtraLight: 200,
         Light: 300,
         Regular: 400,
         Medium: 500,
+        SemiBold: 600,
         Bold: 700,
+        ExtraBold: 800,
         Black: 900
     };
 
@@ -128,7 +131,7 @@ module.exports = function(grunt) {
     }
 
     const encodeName = function(name) {
-        return name.replace(/([A-Z])/g, (match, p) => '+' + p).replace(/^\+/, '');
+        return name.replace(/([A-Z][a-z])/g, (match, p) => '+' + p).replace(/^\+/, '');
     };
 
 
