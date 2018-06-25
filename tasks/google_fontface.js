@@ -137,6 +137,7 @@ module.exports = function(grunt) {
           }
         };
 
+      // Fetch CSS files for local TTF files.
       function fetch(family, file) {
           const url = `${options.url}?family=${family}`;
           wg.add();
@@ -169,6 +170,8 @@ module.exports = function(grunt) {
               }, encodeFont(names[0], fonts[names[0]]));
               fetch(family, file);
           } else {
+              // If the type of 'dest' is directory, I will create a single CSS 
+              // file for each font and save it to the 'dest' directory.
               names.forEach((name) => {
                   fetch(encodeFont(name, fonts[name]), {src: file.src, dest: `${file.dest}${name}.css`});
               });
