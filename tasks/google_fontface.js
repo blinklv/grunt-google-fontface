@@ -27,8 +27,8 @@ module.exports = function(grunt) {
         return grunt.util._.endsWith(dest, '/') ? 'directory' : 'file';
     }
 
-    // Mapping weight descriptions to weight numbers.
     const weights = {
+        // Mapping weight descriptions to weight numbers.
         Thin: 100,
         ExtraLight: 200,
         Light: 300,
@@ -37,7 +37,18 @@ module.exports = function(grunt) {
         SemiBold: 600,
         Bold: 700,
         ExtraBold: 800,
-        Black: 900
+        Black: 900,
+
+        // Mapping weight numbers to weight descriptions.
+        100: 'Thin',
+        200: 'ExtraLight',
+        300: 'Light',
+        400: 'Regular',
+        500: 'Medium',
+        600: 'SemiBold',
+        700: 'Bold',
+        800: 'ExtraBold',
+        900: 'Black'
     };
 
     // Encoding font informations to the 'family' url parameter.
@@ -66,7 +77,7 @@ module.exports = function(grunt) {
 
     // Using keys of the 'weights' object generating matching pattern seems
     // better than hard coding :)
-    const weightDescs = Object.keys(weights).join('|');
+    const weightDescs = Object.keys(weights).filter((e) => isNaN(+e)).join('|');
     const refont = new RegExp(`^(\\w+)(?:-(${weightDescs})?(\\w+)?)?\\.ttf$`);
 
     // Extracts the font name and the font format (include weight and style) from
@@ -80,21 +91,32 @@ module.exports = function(grunt) {
         return [results[1], { weight: results[2], style: results[3] }];
     }
 
-    const resrc = /src: local\('(.*?)'\), local\('(.*?)'\).*/g;
+    const refontface = /@font-face\s*\{\s*font-family:\s*'(.*)'\s*;\s*font-style:\s*(.*)\s*;\s*font-weight:\s*(.*)\s*;\s*src:\s*(.*)\s*;\s*\}/g;
+    const reurl = /url\(.*?\)/g;
     // We can't directly use CSS files fetched from Google because some url
     // references ('src' field) in them don't point to your local TTF files.
     // modifySrc function will modify them to satisfy our needs that making
     // urls reference local TTF files.
     function modifySrc(body, file) {
-        return body.replace(resrc, (match, name1, name2) =>{
-            let fontfile = name2file(name2, file);
-            if (fontfile === null) {
-                fontfile = name2file(name1, file);
+        return body.replace(refontface, (match, family, style, weight, src) =>{
+            family = family.replace(/\s/g, '');
+            style = style.replace(/^\w/, c => c.toUpperCase());
+            weight = weights[weight];
+
+            const altNames = [
+                `${family}-${weight}${style}`,
+                `${family}-${style}`,
+                `${family}-${weight}`,
+                `${family}`
+            ];
+            for (let name of altNames) {
+                let fileName = name2file(name, file);
+                if (fileName !== null) {
+                    return replaceURL(match, path.relative(file.dest, fileName));
+                }
             }
 
-            return fontfile !== null ?
-                `src: local('${name1}'), local('${name2}'), url(${path.relative(file.dest, fontfile)});`:
-                match;
+            return match;
         });
     }
 
@@ -106,6 +128,12 @@ module.exports = function(grunt) {
             }
         }
         return null;
+    }
+
+    function replaceURL(match, fileName) {
+        return match.replace(reurl, (m) => {
+            return `url(${fileName})`;
+        });
     }
 
 

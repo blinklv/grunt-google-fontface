@@ -1,48 +1,85 @@
-'use strict';
+//  google_fontface_test.js
+//
+// Author: blinklv <blinklv@icloud.com>
+// Create Time: 2018-06-26
+// Maintainer: blinklv <blinklv@icloud.com>
+// Last Change: 2018-06-26
 
-var grunt = require('grunt');
+(() => {
+    'use strict';
 
-/*
-  ======== A Handy Little Nodeunit Reference ========
-  https://github.com/caolan/nodeunit
+    const fs = require('fs');
+    const path = require('path');
+    const css = require('css');
+    const isWindows = process.platform === 'win32';
+    const reurl = /url\((.*?)\)/;
 
-  Test methods:
-    test.expect(numAssertions)
-    test.done()
-  Test assertions:
-    test.ok(value, [message])
-    test.equal(actual, expected, [message])
-    test.notEqual(actual, expected, [message])
-    test.deepEqual(actual, expected, [message])
-    test.notDeepEqual(actual, expected, [message])
-    test.strictEqual(actual, expected, [message])
-    test.notStrictEqual(actual, expected, [message])
-    test.throws(block, [error], [message])
-    test.doesNotThrow(block, [error], [message])
-    test.ifError(value)
-*/
+    // Mapping weight descriptions to weight numbers.
+    const weights = {
+        Thin: 100,
+        ExtraLight: 200,
+        Light: 300,
+        Regular: 400,
+        Medium: 500,
+        SemiBold: 600,
+        Bold: 700,
+        ExtraBold: 800,
+        Black: 900
+    };
 
-exports.google_fontface = {
-  setUp: function(done) {
-    // setup here if necessary
-    done();
-  },
-  default_options: function(test) {
-    test.expect(1);
+    // Using keys of the 'weights' object generating matching pattern seems
+    // better than hard coding :)
+    const weightDescs = Object.keys(weights).join('|');
+    const refont = new RegExp(`^(\\w+)(?:-(${weightDescs})?(\\w+)?)?\\.ttf$`);
 
-    var actual = grunt.file.read('tmp/default_options');
-    var expected = grunt.file.read('test/expected/default_options');
-    test.equal(actual, expected, 'should describe what the default behavior is.');
+    // The path separator ('\') of Windows is different from UNIX-like's ('/');
+    // The following function converts backslash characters of a path to slash
+    // characters.
+    function unixifyPath(filepath) {
+        return isWindows ? filepath.replace(/\\/g, '/') : filepath;
+    }
 
-    test.done();
-  },
-  custom_options: function(test) {
-    test.expect(1);
+    // Extracts the font name and the font format (include weight and style) from
+    // a TTF file name which should satisfy the standard format 'Name-WeightStyle'.
+    function extract(test, filename) {
+        const results = refont.exec(path.basename(unixifyPath(filename)));
+        if (results === null || results.length < 2) {
+            test.ok(false, `The name of the TTF file '${filename}' is not standard`);
+            return;
+        }
+        return { 
+            family: results[1], 
+            weight: weights[results[2]] ? weights[results[2]]: 400,
+            style: results[3] !== undefined ? results[3].toLowerCase() : 'normal'
+        };
+    }
 
-    var actual = grunt.file.read('tmp/custom_options');
-    var expected = grunt.file.read('test/expected/custom_options');
-    test.equal(actual, expected, 'should describe what the custom option(s) behavior is.');
+    function check(test, file) {
+        const content = fs.readFileSync(file, 'utf8');
+        const obj = css.parse(content);
+        const fonts = obj.stylesheet.rules.map((rule) => {
+            const d = rule.declarations;
+            return [{ 
+                family: d[0].value.replace(/('|\s)/g, ''),
+                style: d[1].value, 
+                weight: Number(d[2].value)
+            }, path.resolve(file, (reurl.exec(d[3].value))[1])];
+            
+        });
 
-    test.done();
-  },
-};
+        fonts.forEach((font) => {
+            const [format, path] = font;
+            test.ok(fs.existsSync(path), `'${path}' doesn't exist`);
+            const actual = extract(test, path);
+            test.deepEqual(actual, format);
+        });
+    }
+
+    exports.google_fontface = {
+        single_file: function(test) {
+            check(test, 'test/css/font.css');
+            test.done();
+        }
+    };
+}) ();
+

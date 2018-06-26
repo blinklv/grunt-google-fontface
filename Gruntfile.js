@@ -23,7 +23,7 @@ module.exports = function(grunt) {
                     jQuery: true
                 },
             },
-            all: ['Gruntfile.js', 'tasks/*.js']
+            all: ['Gruntfile.js', 'tasks/*.js', '<%= nodeunit.tests %>']
         },
 
         // Before generating any new files, remove any previously-created files.
@@ -33,34 +33,21 @@ module.exports = function(grunt) {
 
         // Configuration to be run (and then tested).
         google_fontface: {
-            single: {
-                files: [{
-                    src: 'test/font/font-1/**/*.ttf',
-                    dest: 'test/css/font-1.css'
-                },{
-                    src: 'test/font/font-2/**/*.ttf',
-                    dest: 'test/css/font-2.css'
-                }]
+            single_file: {
+                src: 'test/font/**/*.ttf',
+                dest: 'test/css/font.css'
             },
-            multiple: {
-                files: [{
-                    src: 'test/font/**/*.ttf',
-                    dest: 'test/css/fonts/'
-                },{
-                    expand: true,
-                    cwd: 'test/font/font-1/',
-                    src: '**/*.ttf',
-                    dest: 'test/css/',
-                    extDot: 'last',
-                    ext: '.css'
-                },{
-                    expand: true,
-                    cwd: 'test/font/font-2/',
-                    src: '**/*.ttf',
-                    dest: 'test/css/',
-                    extDot: 'last',
-                    ext: '.css'
-                }]
+            multiple_files: {
+                src: 'test/font/**/*.ttf',
+                dest: 'test/css/font/'
+            },
+            multiple_directories: {
+                expand: true,
+                cwd: 'test/font/',
+                src: '**/*.ttf',
+                dest: 'test/css/',
+                extDot: 'last',
+                ext: '.css'
             }
         },
 
