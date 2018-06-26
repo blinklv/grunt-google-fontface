@@ -6,11 +6,12 @@
  * Licensed under the MIT license.
  */
 
-'use strict';
 
 // The implementation of this plugin relies on ES6 syntax; If the version of your
 // NodeJS is too old, you should upgrade it.
 module.exports = function(grunt) {
+    'use strict';
+
     const path = require('path');
     const request = require('request');
     const isWindows = process.platform === 'win32';
