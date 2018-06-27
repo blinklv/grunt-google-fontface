@@ -1,7 +1,7 @@
 {
   "name": "grunt-google-fontface",
   "description": "Fetch CSS files of fonts from Google.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/blinklv/grunt-google-fontface",
   "author": {
     "name": "blinklv",
