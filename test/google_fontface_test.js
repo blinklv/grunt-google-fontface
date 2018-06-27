@@ -3,7 +3,7 @@
 // Author: blinklv <blinklv@icloud.com>
 // Create Time: 2018-06-26
 // Maintainer: blinklv <blinklv@icloud.com>
-// Last Change: 2018-06-26
+// Last Change: 2018-06-27
 
 (() => {
     'use strict';
@@ -78,6 +78,22 @@
     exports.google_fontface = {
         single_file: function(test) {
             check(test, 'test/css/font.css');
+            test.done();
+        },
+        multiple_files: function(test) {
+            fs.readdirSync('test/css/font/').forEach((file) => {
+                check(test, `test/css/font/${file}`);
+            });
+            test.done();
+        },
+        multiple_directoires: function(test) {
+            fs.readdirSync('test/css/').forEach((dir) => {
+                if (dir!== 'font' && fs.lstatSync(`test/css/${dir}`).isDirectory()) {
+                    fs.readdirSync(`test/css/${dir}/`).forEach((file) => {
+                        check(test, `test/css/${dir}/${file}`);
+                    });
+                }
+            });
             test.done();
         }
     };
