@@ -21,7 +21,7 @@ grunt.loadNpmTasks('grunt-google-fontface');
 
 ### Overview
 
-[Google Fonts][] is a good web site which you can get many beautiful custom fonts. You can reference them from **Google Fonts** directly or download them (**TTF** files) to your local storage then reference them. In second case, you have to configure CSS files which contain `@font-face` definiations for your local TTF files. This plugin will fetch these CSS configurations from **Google Fonts** and modify them to satisfy your needs.
+[Google Fonts][] is a good web site which you can get many beautiful custom fonts. You can reference them from **Google Fonts** directly or download them (**TTF** files) to your local storage then reference them. In the second case, you have to configure CSS files which contain `@font-face` definitions for your local TTF files. This plugin will fetch these CSS configurations from **Google Fonts** and modify them to satisfy your needs.
 
 ### Options
 
@@ -35,7 +35,7 @@ The **URL** which you can fetch CSS files for your TTF files, although I think y
 
 #### Generate a single CSS file
 
-In this example, running `google_fontface:single_file` will generate a single CSS file which contains all `@font-face` definiations for your TTF files donwloaded from [Google Fonts][]. 
+In this example, running `google_fontface:single_file` will generate a single CSS file which contains all `@font-face` definitions for your TTF files downloaded from [Google Fonts][]. 
 
 ```js
 grunt.initConfig({
@@ -50,7 +50,7 @@ grunt.initConfig({
 
 #### Generate a CSS file for each font
 
-The font files you download from [Google Fonts][] are placed in different directories based on font name, so all TTF files related to a font are in same directory. In this example, running `google_fontface:multiple_files` will generate a CSS file which contains `@font-face` definiations for each font (directory).
+The font files you download from [Google Fonts][] are placed in different directories based on font name, so all TTF files related to a font are in the same directory. In this example, running `google_fontface:multiple_files` will generate a CSS file which contains `@font-face` definitions for each font (directory).
 
 ```js
 grunt.initConfig({
@@ -67,7 +67,7 @@ grunt.initConfig({
 
 #### Generate a directory contains CSS files for each font
 
-In this example, running `google_fontface:multiple_files` will generate a directory which contains CSS files for each font. Each TTF file you download from [Google Fonts][] will have a CSS file contains its `@font-face` definiation.
+In this example, running `google_fontface:multiple_files` will generate a directory which contains CSS files for each font. Each TTF file you download from [Google Fonts][] will have a CSS file contains its `@font-face` definition.
 
 ```js
 grunt.initConfig({
