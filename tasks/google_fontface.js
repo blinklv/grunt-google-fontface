@@ -112,7 +112,7 @@ module.exports = function(grunt) {
             for (let name of altNames) {
                 let fileName = name2file(name, file);
                 if (fileName !== null) {
-                    return replaceURL(match, path.relative(file.dest, fileName));
+                    return replaceURL(match, path.relative(path.dirname(file.dest), fileName));
                 }
             }
 

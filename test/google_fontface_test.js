@@ -63,7 +63,7 @@
                 family: d[0].value.replace(/('|\s)/g, ''),
                 style: d[1].value, 
                 weight: Number(d[2].value)
-            }, path.resolve(file, (reurl.exec(d[3].value))[1])];
+            }, path.resolve(path.dirname(file), (reurl.exec(d[3].value))[1])];
             
         });
 
